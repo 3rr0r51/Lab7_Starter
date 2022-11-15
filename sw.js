@@ -53,4 +53,20 @@ self.addEventListener('fetch', function (event) {
     });
   }));
   */
+  if (event.request.mode === 'navigate') {
+    // Open the cache
+    event.respondWith(caches.open(cacheName).then((cache) => {
+      // Go to the network first
+      return fetch(event.request).then((fetchedResponse) => {
+        cache.put(event.request, fetchedResponse.clone());
+
+        return fetchedResponse;
+      }).catch(() => {
+        // If the network is unavailable, get
+        return cache.match(event.request);
+      });
+    }));
+  } else {
+    return;
+  }
 });
